@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Calculator</title>
+    <style>
+        body {
+            /*height: 200px;*/
+            background-color: rgb(18, 18, 71); /* For browsers that do not support gradients */
+            background-image: linear-gradient(rgb(32, 73, 68), rgb(59, 35, 87)); /* Standard syntax (must be last) */
+        }
+        #container {
+        margin-left: 100px;
+        display: grid;
+        /*grid-template-columns: repeat(4, 2fr);*/
+        grid-auto-rows: 100px; 
+        grid-row-gap: 0px;
+        grid-template-columns: auto auto auto auto;
+        background-color: rgb(37, 94, 141);
+        padding: 0px;
+        width: 440px;
+        height: auto;
+        }
+        button {
+            font-weight: bold;
+            display: inline block;
+            margin: 0px auto;
+            border-radius: 5px;
+            width: 105px;
+            height: 97px;
+            font-size: 20px;
+        }
+        @font-face {
+            font-family: calculatorFont;
+            src: url(digital-7mono.ttf);
+        }
+        #preview {
+            margin-top: 20px;
+            margin-left: 10px;
+            margin-bottom: 20px;
+            grid-column-start: 1; 
+            grid-column-end: 5; 
+            display: inline-block;
+            border-radius: 5px;
+            background-color: grey;
+            text-align: right;
+            color: black;
+            width: 420px;
+            font-family: calculatorFont;
+            font-size: 30px;
+            word-wrap: break-word;
+        }
+        #display {
+            margin-top: 0px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            grid-column-start: 1; 
+            grid-column-end: 5; 
+            display: inline-block;
+            border-radius: 5px;
+            border-color: black;
+            background-color: grey;
+            text-align: right;
+            color: white;
+            width: 420px;
+            font-family: calculatorFont;
+            font-size: 80px;
+            word-wrap: break-word;
+        }
+        #AC {
+            grid-column-start: 1; 
+            grid-column-end: 4;
+            width: 320px;
+        }
+        #\= {
+            grid-column-start: 3; 
+            grid-column-end: 5;
+            width: 210px;
+        }
+        .number {
+            background-color: gold;
+            color: black;
+        }
+        .operator {
+            background-color: darkgrey;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+        <div id="container">
+            <span id = "preview"></span>
+            <span id = "display"></span>
+            <button id = "AC" class ="clear">AC</button>
+            <button id = "+" class="operator">+</button>
+            <button id = "7" class="number">7</button>
+            <button id = "8" class="number">8</button>
+            <button id = "9" class="number">9</button>
+            <button id = "-" class="operator">-</button>
+            <button id = "4" class="number">4</button>
+            <button id = "5" class="number">5</button>
+            <button id = "6" class="number">6</button>
+            <button id = "*" class="operator">*</button>
+            <button id = "1" class="number">1</button>
+            <button id = "2" class="number">2</button>
+            <button id = "3" class="number">3</button>
+            <button id = "/" class="operator">/</button>
+            <button id = "." class="number">.</button>
+            <button id = "0" class="number">0</button>
+            <button id = "=" class="equals">=</button>
+
+        </div>
+
+    <script>
+
+        let previewString = "";
+        let numberString = "";
+        let operatorString = "+";
+        let addArray = [0];
+        let multArray = [];
+        let multAdd = 0;
+        let total = 0;
+        let num = "";
+        let lastInput = "operator";
+
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach((button) => {
+            button.addEventListener('click', (e) => {
+
+                // preventing calculator from breaking
+                if (operatorString.length == 1 && button.id == "-" && numberString == "" && lastInput !== "equals") {
+                    operatorString += "-";
+                    previewString += "-";
+                    document.getElementById("preview").innerHTML = previewString;
+                    lastInput = "operator";
+                }
+                else if (lastInput == "operator" && button.classList == "operator" ||
+                    lastInput == "equals" && button.classList == "number") {
+                    alert("Cannot input " + lastInput + " then " + button.classList + "!")
+                }
+                // enters numbers as a string
+                else if (button.classList == "number") {    
+                    previewString += button.id;
+                    document.getElementById("preview").innerHTML = previewString;
+                    numberString += button.id;
+                    lastInput = "number";
+                }
+                // operators
+                else if (button.classList == "operator") {
+                    if (lastInput == "equals") {
+                        num = total;
+                        previewString = num + button.id;
+                        lastInput = "operator";
+                    }
+                    else {
+                        num = parseFloat(numberString);
+                        numberString = "";
+                        previewString += button.id;
+                    }
+                    document.getElementById("preview").innerHTML = previewString;
+                    
+                    if (operatorString.length == 2) operatorString = operatorString.slice(1, 2);
+                    operatorString += button.id;
+
+                    // addition
+                    if (operatorString == "++" ||
+                        operatorString == "+-") {
+                        addArray.push(num);
+                        if (multArray.length > 0) {
+                            for (i = 0; i < multArray.length; i++) {
+                                multAdd *= multArray[i];
+                            }
+                            addArray.push(multAdd);
+                            multAdd = [];
+                        }
+                    }
+                    // subtraction
+                    else if (operatorString == "-+" ||
+                            operatorString == "--") {
+                        addArray.push(num * -1);
+                        if (multArray.length > 0) {
+                            for (i = 0; i < multArray.length; i++) {
+                                multAdd *= multArray[i];
+                            }
+                            addArray.push(multAdd);
+                            multAdd = [];
+                        }
+                    }
+                    // positive multiplication
+                    else if (operatorString == "+*" ||
+                            operatorString == "+/" ||
+                            operatorString == "*+" ||
+                            operatorString == "*-" ||
+                            operatorString == "**" ||
+                            operatorString == "*/") {
+                        multArray.push(num);
+                    }
+                    // negative multiplication
+                    else if (operatorString == "-*" ||
+                            operatorString == "-/") multArray.push(num * -1);
+                    
+                    // division
+                    else if (operatorString == "/+" ||
+                            operatorString == "/-" ||
+                            operatorString == "/*" ||
+                            operatorString == "//") multArray.push(1 / num);
+                    else {
+                        alert("ERROR");
+                    }
+                    lastInput = "operator";
+                }
+                // equals
+                else if (button.classList == "equals") {
+                    previewString += " = ";
+                    document.getElementById("preview").innerHTML = previewString;
+
+                    num = parseFloat(numberString);
+                    numberString = "";
+                    total = 0;
+                    
+                    if (operatorString.length == 2) {
+                        if (operatorString.charAt(1) == "+") addArray.push(num);
+                        if (operatorString.charAt(1) == "-") addArray.push(num * -1);
+                        if (operatorString.charAt(1) == "*") multArray.push(num);
+                        if (operatorString.charAt(1) == "/") multArray.push(1 / num);
+                    }
+                    else addArray.push(num);
+                    if (multArray.length > 0) {
+                        multAdd = 1;
+                        for (i = 0; i < multArray.length; i++) {
+                            multAdd *= multArray[i];
+                        }
+                        addArray.push(multAdd);
+                        multAdd = 0;
+                    }
+                    for (i = 0; i < addArray.length; i++) {
+                        total += addArray[i];
+                    }
+                    document.getElementById("display").innerHTML = total;
+                    let totalLength = total.toString().length;
+                    let display = document.getElementById("display")
+                    if (totalLength > 9) display.style.fontSize = "50px";
+                    else display.style.fontSize = "100px";
+
+                    operatorString = "+"
+                    addArray = [0];
+                    multArray = [];
+                    lastInput = "equals";
+                }
+                // clear
+                else if (button.classList == "clear") {
+                    previewString = "";
+                    document.getElementById("display").innerHTML = "";
+                    document.getElementById("preview").innerHTML = previewString;
+                    operatorString = "+"
+                    numberString = "";
+                    addArray = [0];
+                    multArray = [];
+                    total = 0;
+                    lastInput = "operator";
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
